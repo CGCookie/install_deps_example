@@ -22,48 +22,63 @@ Created by Jason van Gumster
 
 '''
 
-import sys
-import subprocess
 import os
-from os.path import join, realpath, dirname
-from pathlib import Path
 import pkg_resources
+import subprocess
+import sys
+from pathlib import Path
+
+add_on_path = Path(__file__).parent                  # assuming this file is at root of add-on
+deps_path = add_on_path / 'deps_public'              # might not exist until install_deps is called
+requirements_txt = add_on_path / 'requirements.txt'  # assuming requirements.txt is at root of add-on
 
 
 def install_deps():
-    project_root_dir = dirname(realpath(__file__))
-    deps_dir = join(project_root_dir, "deps_public")
-
-    os.makedirs(deps_dir, exist_ok=True)
+    # Create folder into which pip will install dependencies
+    try:
+        deps_path.mkdir(exist_ok=True)
+    except Exception as e:
+        print(f'Caught Exception while trying to create dependencies folder')
+        print(f'  Exception: {e}')
+        return False
 
     # Ensure pip is installed
-    print(sys.executable)
-    subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
-    
+    try:
+        subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
+    except CalledProcessError as e:
+        print(f'Caught CalledProcessError while trying to ensure pip is installed')
+        print(f'  Exception: {e}')
+        print(f'  {sys.executable=}')
+        return False
+
     # Install dependencies from requirements.txt
-    subprocess.check_call([
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "-r",
-        join(project_root_dir, "requirements.txt"),
-        "--target",
-        deps_dir
-    ])
+    try:
+        subprocess.check_call([
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-r",
+            os.fspath(requirements_txt),
+            "--target",
+            os.fspath(deps_path)
+        ])
+    except CalledProcessError as e:
+        print(f'Caught CalledProcessError while trying to install dependencies')
+        print(f'  Exception: {e}')
+        return False
+
+    return True
 
 
 def check_deps():
-    requirements_txt = Path(__file__).with_name("requirements.txt")
-
-    deps = pkg_resources.parse_requirements(requirements_txt.open())
-
-    for dependency in deps:
-        dependency = str(dependency)
-
-        try:
-            pkg_resources.require(dependency)
-        except:
-            return False
+    try:
+        deps = pkg_resources.parse_requirements(requirements_txt.open())
+        for dependency in deps:
+            pkg_resources.require(str(dependency))
+    except Exception as e:
+        print(f'Caught Exception while trying to check dependencies')
+        print(f'  Exception: {e}')
+        return False
 
     return True

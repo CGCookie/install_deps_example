@@ -64,7 +64,8 @@ class EXAMPLE_OT_install_dependencies(Operator):
         return not global_vars.dependencies_installed
 
     def execute(self, context):
-        install_deps()
+        if not install_deps():
+            return {'CANCELLED'}
         global_vars.dependencies_installed = check_deps()
 
         # Register any classes that need registering once dependencies are installed
