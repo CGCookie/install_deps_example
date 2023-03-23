@@ -24,7 +24,7 @@ Created by Jason van Gumster
 
 bl_info = {
     "name": "Install Dependencies Example",
-    "author": "Jason van Gumster",
+    "author": "Jason van Gumster, Jonathan Denning",
     "version": (1, 0),
     "blender": (3, 4, 0),
     "location": "Preferences",

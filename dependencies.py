@@ -26,17 +26,19 @@ import os
 import pkg_resources
 import subprocess
 import sys
-from functools import cache
 from pathlib import Path
 
 
 add_on_path = Path(__file__).parent                     # assuming this file is at root of add-on
 requirements_txt = add_on_path / 'requirements.txt'     # assuming requirements.txt is at root of add-on
 deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
-deps_installed_path = deps_path / 'all_deps_installed'  # a touched file indicating all deps installed correctly
 
 
 class Dependencies:
+    # cache variables used to eliminate unnecessary computations
+    _checked = None
+    _requirements = None
+
     @staticmethod
     def install():
         if Dependencies.check():
@@ -85,28 +87,39 @@ class Dependencies:
 
     @staticmethod
     def check(*, force=False):
-        if not deps_path.exists():
-            return False
-        if not force:
-            return deps_installed_path.exists()
+        if force:
+            Dependencies._checked = None
+        elif Dependencies._checked is not None:
+            # Assume everything is installed
+            return Dependencies._checked
 
-        deps_installed_path.unlink(missing_ok=True)
+        Dependencies._checked = False
 
-        try:
-            ws = pkg_resources.WorkingSet()
-            ws.add_entry(os.fspath(deps_path))
-            for dep in Dependencies.requirements():
-                ws.require(str(dep))
-            deps_installed_path.touch(exist_ok=True)
-        except Exception as e:
-            print(f'Caught Exception while trying to check dependencies')
-            print(f'  Exception: {e}')
-            return False
+        if deps_path.exists():
+            try:
+                # Ensure all required dependencies are installed in dependencies folder
+                ws = pkg_resources.WorkingSet(entries=[ os.fspath(deps_path) ])
+                for dep in Dependencies.requirements(force=force):
+                    ws.require(dep)
 
-        return True
+                # If we get here, we found all required dependencies
+                Dependencies._checked = True
+
+            except Exception as e:
+                print(f'Caught Exception while trying to check dependencies')
+                print(f'  Exception: {e}')
+
+        return Dependencies._checked
 
     @staticmethod
-    @cache
-    def requirements():
-        deps = pkg_resources.parse_requirements(requirements_txt.open())
-        return [ dep.project_name for dep in deps ]
+    def requirements(*, force=False):
+        if force:
+            Dependencies._requirements = None
+        elif Dependencies._requirements is not None:
+            return Dependencies._requirements
+
+        # load and cache requirements
+        with requirements_txt.open() as requirements:
+            dependencies = pkg_resources.parse_requirements(requirements)
+            Dependencies._requirements = [ dep.project_name for dep in dependencies ]
+        return Dependencies._requirements

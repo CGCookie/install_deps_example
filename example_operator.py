@@ -30,6 +30,8 @@ class EXAMPLE_OT_operate(Operator):
     bl_idname = "example.operate"
     bl_label = "Test import operator"
     bl_description = ("Tests our dependencies install by trying to import an installed module")
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "TOOLS"
 
     @classmethod
     def poll(self, context):
