@@ -35,9 +35,6 @@ requirements_txt = add_on_path / 'requirements.txt'     # assuming requirements.
 deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
 deps_installed_path = deps_path / 'all_deps_installed'  # a touched file indicating all deps installed correctly
 
-#XXX WARNING! This may cause modules to collide with system modules or modules imported by other add-ons!
-sys.path.append(os.fspath(deps_path))
-
 
 class Dependencies:
     @staticmethod
@@ -94,12 +91,12 @@ class Dependencies:
             return deps_installed_path.exists()
 
         deps_installed_path.unlink(missing_ok=True)
-        pkg_resources.fixup_namespace_packages(os.fspath(deps_path))
 
         try:
-            deps = pkg_resources.parse_requirements(requirements_txt.open())
-            for dependency in deps:
-                pkg_resources.require(str(dependency))
+            ws = pkg_resources.WorkingSet()
+            ws.add_entry(os.fspath(deps_path))
+            for dep in Dependencies.requirements():
+                ws.require(str(dep))
             deps_installed_path.touch(exist_ok=True)
         except Exception as e:
             print(f'Caught Exception while trying to check dependencies')
