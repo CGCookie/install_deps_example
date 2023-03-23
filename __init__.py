@@ -41,9 +41,7 @@ import sys
 import os
 
 # Local imports
-from . import global_vars
-global_vars.initialize()
-from .install_dependencies import install_deps, check_deps
+from .dependencies import Dependencies
 from .example_operator import EXAMPLE_OT_operate
 
 
@@ -61,12 +59,11 @@ class EXAMPLE_OT_install_dependencies(Operator):
     @classmethod
     def poll(self, context):
         # Deactivate when dependencies have been installed
-        return not global_vars.dependencies_installed
+        return not Dependencies.check()
 
     def execute(self, context):
-        if not install_deps():
+        if not Dependencies.install():
             return {'CANCELLED'}
-        global_vars.dependencies_installed = check_deps()
 
         # Register any classes that need registering once dependencies are installed
         for cls in classes:
@@ -82,12 +79,10 @@ class EXAMPLE_AddonPreferences(AddonPreferences):
     def draw(self, context):
         layout = self.layout
 
-        lines = [f"This add-on requires a couple Python packages to be installed:",
-                 f"  -six",
-                 f"Click the Install Dependencies button below to install."]
-
-        for line in lines:
-            layout.label(text=line)
+        layout.label(text=f"This add-on requires a couple Python packages to be installed:")
+        for name in Dependencies.requirements():
+            layout.label(text=f'- {name}')
+        layout.label(text=f"Click the Install Dependencies button below to install.")
 
         layout.operator(EXAMPLE_OT_install_dependencies.bl_idname, icon="CONSOLE")
 
@@ -105,17 +100,15 @@ def register():
         #XXX WARNING! This may cause modules to collide with system modules or modules imported by other add-ons!
         sys.path.append(deps_path)
 
-    global_vars.dependencies_installed = check_deps()
-
-    if global_vars.dependencies_installed:
+    if Dependencies.check(force=True):
         for cls in classes:
             bpy.utils.register_class(cls)
 
 
 def unregister():
-    for cls in pref_classes:
+    if Dependencies.check():
+        for cls in reversed(classes):
+            bpy.utils.unregister_class(cls)
+    for cls in reversed(pref_classes):
         bpy.utils.unregister_class(cls)
 
-    if global_vars.dependencies_installed:
-        for cls in classes:
-            bpy.utils.unregister_class(cls)
