@@ -92,6 +92,7 @@ class Dependencies:
             return deps_installed_path.exists()
 
         deps_installed_path.unlink(missing_ok=True)
+        pkg_resources.fixup_namespace_packages(os.fspath(deps_path))
 
         try:
             deps = pkg_resources.parse_requirements(requirements_txt.open())
