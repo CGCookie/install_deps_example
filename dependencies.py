@@ -31,9 +31,12 @@ from pathlib import Path
 
 
 add_on_path = Path(__file__).parent                     # assuming this file is at root of add-on
-deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
 requirements_txt = add_on_path / 'requirements.txt'     # assuming requirements.txt is at root of add-on
+deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
 deps_installed_path = deps_path / 'all_deps_installed'  # a touched file indicating all deps installed correctly
+
+#XXX WARNING! This may cause modules to collide with system modules or modules imported by other add-ons!
+sys.path.append(os.fspath(deps_path))
 
 
 class Dependencies:
@@ -54,7 +57,7 @@ class Dependencies:
         # Ensure pip is installed
         try:
             subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
-        except CalledProcessError as e:
+        except subprocess.CalledProcessError as e:
             print(f'Caught CalledProcessError while trying to ensure pip is installed')
             print(f'  Exception: {e}')
             print(f'  {sys.executable=}')
@@ -72,7 +75,7 @@ class Dependencies:
                 "--target",
                 os.fspath(deps_path)
             ])
-        except CalledProcessError as e:
+        except subprocess.CalledProcessError as e:
             print(f'Caught CalledProcessError while trying to install dependencies')
             print(f'  Exception: {e}')
             print(f'  Requirements: {requirements_txt}')
@@ -83,6 +86,8 @@ class Dependencies:
 
     @staticmethod
     def check(*, force=False):
+        if not deps_path.exists():
+            return False
         if not force:
             return deps_installed_path.exists()
 

@@ -95,11 +95,6 @@ def register():
     for cls in pref_classes:
         bpy.utils.register_class(cls)
 
-    deps_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "deps_public")
-    if os.path.exists(deps_path):
-        #XXX WARNING! This may cause modules to collide with system modules or modules imported by other add-ons!
-        sys.path.append(deps_path)
-
     if Dependencies.check(force=True):
         for cls in classes:
             bpy.utils.register_class(cls)
