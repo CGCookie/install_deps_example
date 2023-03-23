@@ -65,7 +65,7 @@ class Dependencies:
 
         # Install dependencies from requirements.txt
         try:
-            subprocess.check_call([
+            cmd = [
                 sys.executable,
                 "-m",
                 "pip",
@@ -74,7 +74,9 @@ class Dependencies:
                 os.fspath(requirements_txt),
                 "--target",
                 os.fspath(deps_path)
-            ])
+            ]
+            print(f'Installing: {cmd}')
+            subprocess.check_call(cmd)
         except subprocess.CalledProcessError as e:
             print(f'Caught CalledProcessError while trying to install dependencies')
             print(f'  Exception: {e}')
