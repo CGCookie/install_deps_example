@@ -22,6 +22,7 @@ Created by Jason van Gumster
 
 '''
 
+import sys
 import bpy
 from bpy.types import Operator
 
@@ -38,10 +39,16 @@ class EXAMPLE_OT_operate(Operator):
         return True
 
     def execute(self, context):
+        print(f'Executing')
+        print(f'  {sys.path=}')
+
         try:
             import six
-        except:
-            self.report({"WARNING"}, "Failure importing our test module. Sadness abounds!")
+            self.report({"INFO"}, "Success! Module imported! Commence joyous celebration!")
 
-        self.report({"INFO"}, "Success! Module imported! Commence joyous celebration!")
+        except Exception as e:
+            self.report({"WARNING"}, "Failure importing our test module. Sadness abounds!")
+            print(f'Caught Exception while trying to import six')
+            print(f'  Exception: {e}')
+
         return {"FINISHED"}

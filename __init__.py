@@ -45,9 +45,6 @@ from .dependencies import Dependencies
 from .example_operator import EXAMPLE_OT_operate
 
 
-classes = (EXAMPLE_OT_operate,)
-
-
 class EXAMPLE_OT_install_dependencies(Operator):
     bl_idname = "preferences.example_install_dependencies"
     bl_label = "Install dependencies"
@@ -66,8 +63,7 @@ class EXAMPLE_OT_install_dependencies(Operator):
             return {'CANCELLED'}
 
         # Register any classes that need registering once dependencies are installed
-        for cls in classes:
-            bpy.utils.register_class(cls)
+        register_classes_with_dependencies()
 
         return {"FINISHED"}
 
@@ -82,8 +78,8 @@ class EXAMPLE_AddonPreferences(AddonPreferences):
         layout.label(text=f"This add-on requires a couple Python packages to be installed:")
         for name in Dependencies.requirements():
             layout.label(text=f'- {name}')
-        layout.label(text=f"Click the Install Dependencies button below to install.")
 
+        layout.label(text=f"Click the Install Dependencies button below to install.")
         layout.operator(EXAMPLE_OT_install_dependencies.bl_idname, icon="CONSOLE")
 
 
@@ -105,24 +101,53 @@ class EXAMPLE_PT_Panel(Panel):
             layout.operator("screen.userpref_show")
 
 
-pref_classes = (EXAMPLE_OT_install_dependencies,
-                EXAMPLE_AddonPreferences,
-                EXAMPLE_PT_Panel)
+classes_with_dependencies = [
+    EXAMPLE_OT_operate,
+]
+registered_classes_with_dependencies = False
+
+classes_example = [
+    EXAMPLE_OT_install_dependencies,
+    EXAMPLE_AddonPreferences,
+    EXAMPLE_PT_Panel,
+]
+
+
+def register_classes_with_dependencies():
+    global registered_classes_with_dependencies
+    if registered_classes_with_dependencies:
+        # Already registered classes
+        return
+
+    if not Dependencies.check(force=True):
+        # Dependencies are not installed, so cannot register the classes
+        return
+
+    for cls in classes_with_dependencies:
+        bpy.utils.register_class(cls)
+
+    registered_classes_with_dependencies = True
+
+def unregister_classes_with_dependencies():
+    global registered_classes_with_dependencies
+    if not registered_classes_with_dependencies:
+        # No registered classes needing unregistered
+        return
+
+    for cls in reversed(classes_with_dependencies):
+        bpy.utils.unregister_class(cls)
+
+    registered_classes_with_dependencies = False
 
 
 def register():
-    for cls in pref_classes:
+    for cls in classes_example:
         bpy.utils.register_class(cls)
-
-    if Dependencies.check(force=True):
-        for cls in classes:
-            bpy.utils.register_class(cls)
+    register_classes_with_dependencies()
 
 
 def unregister():
-    if Dependencies.check():
-        for cls in reversed(classes):
-            bpy.utils.unregister_class(cls)
-    for cls in reversed(pref_classes):
+    unregister_classes_with_dependencies()
+    for cls in reversed(classes_example):
         bpy.utils.unregister_class(cls)
 
