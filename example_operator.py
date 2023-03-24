@@ -39,9 +39,6 @@ class EXAMPLE_OT_operate(Operator):
         return True
 
     def execute(self, context):
-        print(f'Executing')
-        print(f'  {sys.path=}')
-
         try:
             import six
             self.report({"INFO"}, "Success! Module imported! Commence joyous celebration!")
