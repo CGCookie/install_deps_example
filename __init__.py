@@ -30,7 +30,7 @@ bl_info = {
     "location": "Preferences",
     "description": "A simple example of how to install external Python modules locally",
     "warning": "This is only an example!",
-    "doc_url": "",
+    "doc_url": "https://github.com/CGCookie/install_deps_example/",
     "category": "Example",
 }
 
