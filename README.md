@@ -5,7 +5,7 @@ This base code serves as an example mechanism for loading external Python depend
 Features:
 
   * Relatively easy to incorporate to an existing add-on
-  * Multi-platform
+  * Multi-platform (tested in Linux, OSX, and Windows)
   * Modules are installed to the add-on's path, not Blender's Python path
   * Uses Blender's Python/PIP to install modules
   * Makes use of `requirements.txt` workflow common in Python development
@@ -14,4 +14,3 @@ Features:
 Known Issues:
 
   * Although modules are installed local to the add-on, they are _not_ sandboxed. Modules are accessible across all of Blender. This means that there is a chance that modules may collide if other add-ons use this mechanism to install their own modules. Unfortunately, this is an issue within Blender without an easy solution overall.
-  * Tested in Linux and Windows, but not yet tested on MacOS
