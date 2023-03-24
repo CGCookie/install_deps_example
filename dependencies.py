@@ -33,6 +33,11 @@ add_on_path = Path(__file__).parent                     # assuming this file is 
 requirements_txt = add_on_path / 'requirements.txt'     # assuming requirements.txt is at root of add-on
 deps_path = add_on_path / 'deps_public'                 # might not exist until install_deps is called
 
+# Append dependencies folder to system path so we can import
+# (important for Windows machines, but less so for Linux)
+sys.path.append(os.fspath(deps_path))
+
+
 
 class Dependencies:
     # cache variables used to eliminate unnecessary computations
