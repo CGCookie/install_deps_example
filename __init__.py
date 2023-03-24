@@ -36,7 +36,7 @@ bl_info = {
 
 
 import bpy
-from bpy.types import AddonPreferences, Operator
+from bpy.types import AddonPreferences, Operator, Panel
 import sys
 import os
 
@@ -87,8 +87,27 @@ class EXAMPLE_AddonPreferences(AddonPreferences):
         layout.operator(EXAMPLE_OT_install_dependencies.bl_idname, icon="CONSOLE")
 
 
+class EXAMPLE_PT_Panel(Panel):
+    bl_label = "Example Panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Example Tab"
+    bl_context = "objectmode"
+
+    def draw(self, context):
+        layout = self.layout
+
+        if Dependencies.check():
+            layout.operator("example.operate")
+        else:
+            layout.label(text="You need to install some packages before using this tool")
+            layout.label(text="Click below to go to Preferences and install them.")
+            layout.operator("screen.userpref_show")
+
+
 pref_classes = (EXAMPLE_OT_install_dependencies,
-                EXAMPLE_AddonPreferences)
+                EXAMPLE_AddonPreferences,
+                EXAMPLE_PT_Panel)
 
 
 def register():

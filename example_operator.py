@@ -41,7 +41,7 @@ class EXAMPLE_OT_operate(Operator):
         try:
             import six
         except:
-            print("It failed! Something is borked")
+            self.report({"WARNING"}, "Failure importing our test module. Sadness abounds!")
 
-        print("Success! Module imported!")
+        self.report({"INFO"}, "Success! Module imported! Commence joyous celebration!")
         return {"FINISHED"}
