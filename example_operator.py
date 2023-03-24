@@ -39,9 +39,6 @@ class EXAMPLE_OT_operate(Operator):
         return True
 
     def execute(self, context):
-        print(f'Executing')
-        print(f'  {sys.path=}')
-
         try:
             import six
             self.report({"INFO"}, "Success! Module imported! Commence joyous celebration!")
@@ -50,5 +47,6 @@ class EXAMPLE_OT_operate(Operator):
             self.report({"WARNING"}, "Failure importing our test module. Sadness abounds!")
             print(f'Caught Exception while trying to import six')
             print(f'  Exception: {e}')
+            print(f'  {sys.path=}')
 
         return {"FINISHED"}
